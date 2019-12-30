@@ -10,8 +10,8 @@ Redis消息队列中间件
 
 ### 特点
 ~~~
-1.    很方便的使用redis消息队列,开箱即用
-2.    可以设置消费消息的频次
+1.很方便的使用redis消息队列,开箱即用
+2.可以设置消费消息的频次
 
 ~~~
 
@@ -22,6 +22,7 @@ Redis消息队列中间件
 + 1.获取initQ包
     install-package InitQ
 + 2.添加中间件
+    ```code
     services.AddInitQ(m=> 
     {
         m.SuspendTime = 1000;
@@ -29,7 +30,9 @@ Redis消息队列中间件
         m.ListSubscribe =new List<IRedisSubscribe>() { new RedisSubscribe(),new RedisSubscribe2() };
         m.ShowLog = false;
     });
+    ```
 + 3.定义消费者类
+    ```code
     public class RedisSubscribe : IRedisSubscribe 
     {
         [Subscribe("bbb")]
@@ -38,7 +41,7 @@ Redis消息队列中间件
             Console.WriteLine($"队列bbb消费消息:{order}");
         }
     }
-
+    ```
 
 ### 版本
 + V1.0       更新时间:2019-12-30
