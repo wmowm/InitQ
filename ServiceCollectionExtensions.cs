@@ -35,7 +35,7 @@ namespace InitQ
 
             foreach (var item in options.ListSubscribe)
             {
-                services.AddSingleton(item);
+                services.TryAddSingleton(item);
             }
 
             return new InitQBuilder(services);

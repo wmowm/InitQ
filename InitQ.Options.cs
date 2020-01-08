@@ -27,7 +27,7 @@ namespace InitQ
         /// </summary>
         public bool ShowLog { get; set; }
 
-        public IList<Type> ListSubscribe { get; set; }
+        public IList<IRedisSubscribe> ListSubscribe { get; set; }
 
         public InitQOptions()
         {
