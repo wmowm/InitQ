@@ -32,34 +32,48 @@ namespace InitQ
                         var _redis = scope.ServiceProvider.GetService<ICacheService>();
                         while (true)
                         {
-                            if (options.ShowLog)
+                            try
                             {
-                                Console.WriteLine($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
-                            }
-                            var count = _redis.ListLength(publish);
-                            if (count > 0)
-                            {
-                                //从MQ里获取一条消息
-                                var res =  _redis.ListRightPop(publish);
-                                //堵塞
-                                Thread.Sleep(options.IntervalTime);
-                                Task.Run(() =>
+                                if (options.ShowLog)
                                 {
-                                    if (parameterInfos.Length == 0)
+                                    Console.WriteLine($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
+                                }
+                                var count = _redis.ListLength(publish);
+                                if (count > 0)
+                                {
+                                    //从MQ里获取一条消息
+                                    var res = _redis.ListRightPop(publish);
+                                    //堵塞
+                                    Thread.Sleep(options.IntervalTime);
+                                    try
                                     {
-                                        ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, null);
+                                        Task.Run(() =>
+                                        {
+                                            if (parameterInfos.Length == 0)
+                                            {
+                                                ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, null);
+                                            }
+                                            else
+                                            {
+                                                object[] parameters = new object[] { res };
+                                                ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, parameters);
+                                            }
+                                        });
                                     }
-                                    else
+                                    catch (Exception ex)
                                     {
-                                        object[] parameters = new object[] { res };
-                                        ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, parameters);
+                                        Console.WriteLine(ex.Message);
                                     }
-                                });
+                                }
+                                else
+                                {
+                                    //线程挂起1s
+                                    Thread.Sleep(options.SuspendTime);
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                //线程挂起1s
-                                Thread.Sleep(options.SuspendTime);
+                                Console.WriteLine(ex.Message);
                             }
                         }
                     }
