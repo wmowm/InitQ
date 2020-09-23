@@ -88,16 +88,27 @@ namespace InitQ
             using (var scoped = provider.CreateScope())
             {
                 var scopedProvider = scoped.ServiceProvider;
-                var consumerServices = scopedProvider.GetServices<IRedisSubscribe>();
-                foreach (var service in consumerServices)
+                var list_service = scopedProvider.GetService<Func<Type, IRedisSubscribe>>();
+                foreach (var item in options.ListSubscribe)
                 {
-                    var typeInfo = service.GetType().GetTypeInfo();
+                    var consumerServices = list_service(item);
+                    var typeInfo = consumerServices.GetType().GetTypeInfo();
                     if (!typeof(IRedisSubscribe).GetTypeInfo().IsAssignableFrom(typeInfo))
                     {
                         continue;
                     }
                     executorDescriptorList.AddRange(GetTopicAttributesDescription(typeInfo));
                 }
+                //var consumerServices = scopedProvider.GetServices<IRedisSubscribe>();
+                //foreach (var service in consumerServices)
+                //{
+                //    var typeInfo = service.GetType().GetTypeInfo();
+                //    if (!typeof(IRedisSubscribe).GetTypeInfo().IsAssignableFrom(typeInfo))
+                //    {
+                //        continue;
+                //    }
+                //    executorDescriptorList.AddRange(GetTopicAttributesDescription(typeInfo));
+                //}
                 Send(executorDescriptorList, provider, options);
             }
         }

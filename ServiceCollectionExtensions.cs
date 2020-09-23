@@ -33,9 +33,28 @@ namespace InitQ
             services.AddHostedService<HostedService>();
 
 
-            foreach (var item in options.ListSubscribe)
+            if (options.ListSubscribe != null)
             {
-                services.TryAddSingleton(item);
+                foreach (var item in options.ListSubscribe)
+                {
+                    services.TryAddSingleton(item);
+                }
+
+                services.AddSingleton(serviceProvider =>
+                {
+                    Func<Type, IRedisSubscribe> accesor = key =>
+                    {
+                        foreach (var item in options.ListSubscribe)
+                        {
+                            if (key == item)
+                            {
+                                return serviceProvider.GetService(item) as IRedisSubscribe;
+                            }
+                        }
+                        throw new ArgumentException($"不支持的DI Key: {key}");
+                    };
+                    return accesor;
+                });
             }
 
             return new InitQBuilder(services);

@@ -27,7 +27,10 @@ namespace InitQ
         /// </summary>
         public bool ShowLog { get; set; }
 
-        public IList<IRedisSubscribe> ListSubscribe { get; set; }
+        /// <summary>
+        /// 需要注入的类型
+        /// </summary>
+        public IList<Type> ListSubscribe { get; set; }
 
         public InitQOptions()
         {
