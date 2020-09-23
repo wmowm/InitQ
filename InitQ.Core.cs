@@ -43,6 +43,7 @@ namespace InitQ
                                 {
                                     //从MQ里获取一条消息
                                     var res = _redis.ListRightPop(publish);
+                                    if (string.IsNullOrEmpty(res)) continue;
                                     //堵塞
                                     Thread.Sleep(options.IntervalTime);
                                     try
