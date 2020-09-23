@@ -27,7 +27,7 @@ Redis消息队列中间件
     {
         m.SuspendTime = 1000;
         m.ConnectionString = "47.104.247.70,password=admin";
-        m.ListSubscribe =new List<IRedisSubscribe>() { new RedisSubscribe(),new RedisSubscribe2() };
+        m.ListSubscribe = new List<Type>() { typeof(RedisSubscribe2), typeof(RedisSubscribe3) };
         m.ShowLog = false;
     });
     ```
