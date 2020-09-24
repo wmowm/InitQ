@@ -32,7 +32,7 @@ Redis消息队列中间件
     });
     ```
 ### 消息发布/订阅
-+ 1.订阅发布者
++ 1.定义发布者
   ```code
     using (var scope = _provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
     {
