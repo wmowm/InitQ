@@ -3,10 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <Description>Redis消息队列中间件
-1.支持多个实例类</Description>
+1.支持redis广播</Description>
     <AssemblyVersion>1.0.0.4</AssemblyVersion>
     <FileVersion>1.0.0.4</FileVersion>
-    <Version>1.0.0.5</Version>
+    <Version>1.0.0.6</Version>
   </PropertyGroup>
 
   <ItemGroup>

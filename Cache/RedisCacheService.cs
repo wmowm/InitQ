@@ -15,6 +15,7 @@ namespace InitQ.Cache
         JsonSerializerSettings jsonConfig = new JsonSerializerSettings() { ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore };
         ConnectionMultiplexer connectionMultiplexer;
         IDatabase database;
+        ISubscriber sub;
 
         class CacheObject<T>
         {
@@ -30,6 +31,8 @@ namespace InitQ.Cache
 
             connectionMultiplexer = ConnectionMultiplexer.Connect(options);
             database = connectionMultiplexer.GetDatabase();
+            //通道广播
+            sub = connectionMultiplexer.GetSubscriber();
         }
 
 
@@ -40,6 +43,8 @@ namespace InitQ.Cache
 
             connectionMultiplexer = ConnectionMultiplexer.Connect(configuration);
             database = connectionMultiplexer.GetDatabase();
+            //通道广播
+            sub = connectionMultiplexer.GetSubscriber();
         }
 
         public ConnectionMultiplexer GetRedis()
@@ -50,6 +55,11 @@ namespace InitQ.Cache
         public IDatabase GetDatabase()
         {
             return database;
+        }
+
+        public ISubscriber GetSubscriber()
+        {
+            return sub;
         }
 
         /// <summary>
@@ -208,6 +218,29 @@ namespace InitQ.Cache
         public async Task<long> ListLengthAsync(string key)
         {
             return await database.ListLengthAsync(key);
+        }
+
+
+        public long Publish(string key, string msg)
+        {
+            var count = database.Publish(key, msg);
+            return count;
+        }
+        public async Task<long> PublishAsync(string key,string msg)
+        {
+            var count = await database.PublishAsync(key,msg);
+            return count;
+        }
+
+
+        public void Subscribe(string key,Action<RedisChannel, RedisValue> action)
+        {
+            sub.Subscribe(key, action);
+        }
+
+        public async Task SubscribeAsync(string key, Action<RedisChannel, RedisValue> action)
+        {
+            await sub.SubscribeAsync(key, action);
         }
     }
 }

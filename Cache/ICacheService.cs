@@ -113,5 +113,36 @@ namespace InitQ.Cache
         Task<long> ListLengthAsync(string key);
 
         long ListLength(string key);
+
+        /// <summary>
+        /// 通道广播
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        long Publish(string key, string msg);
+
+        /// <summary>
+        /// 通道广播
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        Task<long> PublishAsync(string key, string msg);
+
+        /// <summary>
+        /// 订阅通道
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="action"></param>
+        void Subscribe(string key, Action<RedisChannel, RedisValue> action);
+
+        /// <summary>
+        /// 订阅通道
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        Task SubscribeAsync(string key, Action<RedisChannel, RedisValue> action);
     }
 }
