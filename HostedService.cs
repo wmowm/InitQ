@@ -24,8 +24,11 @@ namespace InitQ
         public  Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("程序启动");
-
-            new InitQCore().FindInterfaceTypes(_provider, _options.Value);
+            var init = new InitQCore();
+            Task.Run(async() => 
+            {
+                await init.FindInterfaceTypes(_provider, _options.Value);
+            });
             return Task.CompletedTask;
         }
 

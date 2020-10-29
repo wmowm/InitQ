@@ -15,12 +15,12 @@ namespace InitQ
     public class InitQCore
     {
 
-        private void Send(IEnumerable<ConsumerExecutorDescriptor> ExecutorDescriptorList, IServiceProvider serviceProvider, InitQOptions options)
+        private async Task Send(IEnumerable<ConsumerExecutorDescriptor> ExecutorDescriptorList, IServiceProvider serviceProvider, InitQOptions options)
         {
             foreach (var ConsumerExecutorDescriptor in ExecutorDescriptorList)
             {
                 //线程
-                Task.Run(() =>
+                await Task.Run(async() =>
                 {
                     using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
                     {
@@ -38,17 +38,17 @@ namespace InitQ
                                 {
                                     Console.WriteLine($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
                                 }
-                                var count = _redis.ListLength(publish);
+                                var count = await _redis.ListLengthAsync(publish);
                                 if (count > 0)
                                 {
                                     //从MQ里获取一条消息
-                                    var res = _redis.ListRightPop(publish);
+                                    var res = await _redis.ListRightPopAsync(publish);
                                     if (string.IsNullOrEmpty(res)) continue;
                                     //堵塞
-                                    Thread.Sleep(options.IntervalTime);
+                                    await Task.Delay(options.IntervalTime);
                                     try
                                     {
-                                        Task.Run(() =>
+                                        await Task.Run(async() =>
                                         {
                                             if (parameterInfos.Length == 0)
                                             {
@@ -69,7 +69,7 @@ namespace InitQ
                                 else
                                 {
                                     //线程挂起1s
-                                    Thread.Sleep(options.SuspendTime);
+                                    await Task.Delay(options.SuspendTime);
                                 }
                             }
                             catch (Exception ex)
@@ -81,9 +81,7 @@ namespace InitQ
                 });
             }
         }
-
-
-        public void FindInterfaceTypes(IServiceProvider provider, InitQOptions options)
+        public async Task FindInterfaceTypes(IServiceProvider provider, InitQOptions options)
         {
             var executorDescriptorList = new List<ConsumerExecutorDescriptor>();
             using (var scoped = provider.CreateScope())
@@ -100,19 +98,12 @@ namespace InitQ
                     }
                     executorDescriptorList.AddRange(GetTopicAttributesDescription(typeInfo));
                 }
-                //var consumerServices = scopedProvider.GetServices<IRedisSubscribe>();
-                //foreach (var service in consumerServices)
-                //{
-                //    var typeInfo = service.GetType().GetTypeInfo();
-                //    if (!typeof(IRedisSubscribe).GetTypeInfo().IsAssignableFrom(typeInfo))
-                //    {
-                //        continue;
-                //    }
-                //    executorDescriptorList.AddRange(GetTopicAttributesDescription(typeInfo));
-                //}
-                Send(executorDescriptorList, provider, options);
+                await Send(executorDescriptorList.Where(m => m.Attribute.GetType().Name == "SubscribeAttribute"), provider, options);
             }
         }
+
+
+
 
         private IEnumerable<ConsumerExecutorDescriptor> GetTopicAttributesDescription(TypeInfo typeInfo)
         {

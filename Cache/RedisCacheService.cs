@@ -82,6 +82,11 @@ namespace InitQ.Cache
             return database.StringGet(key);
         }
 
+        public async Task<string> GetAsync(string key)
+        {
+            return await database.StringGetAsync(key);
+        }
+
         public T Get<T>(string key)
         {
             var cacheValue = database.StringGet(key);
@@ -89,25 +94,47 @@ namespace InitQ.Cache
             return res;
         }
 
-        public void Set(string key, object data)
+        public async Task<T> GetAsync<T>(string key)
         {
-            database.StringSet(key, JsonConvert.SerializeObject(data));
+            var cacheValue = await database.StringGetAsync(key);
+            var res = JsonConvert.DeserializeObject<T>(cacheValue);
+            return res;
         }
 
-        public void Set(string key, object data, int cacheTime)
+        public bool Set(string key, object data)
+        {
+            return database.StringSet(key, JsonConvert.SerializeObject(data));
+        }
+
+        public Task<bool> SetAsync(string key, object data)
+        {
+            return database.StringSetAsync(key, JsonConvert.SerializeObject(data));
+        }
+
+        public bool Set(string key, object data, int cacheTime)
         {
             var timeSpan = TimeSpan.FromSeconds(cacheTime);
-            database.StringSet(key, JsonConvert.SerializeObject(data), timeSpan);
+            return database.StringSet(key, JsonConvert.SerializeObject(data), timeSpan);
+        }
+
+        public async Task<bool> SetAsync(string key, object data, int cacheTime)
+        {
+            var timeSpan = TimeSpan.FromSeconds(cacheTime);
+            return await database.StringSetAsync(key, JsonConvert.SerializeObject(data), timeSpan);
         }
         /// <summary>
         /// 删除
         /// </summary>
         /// <param name="key"></param>
-        public void Remove(string key)
+        public bool Remove(string key)
         {
-            database.KeyDelete(key, CommandFlags.HighPriority);
+            return database.KeyDelete(key, CommandFlags.HighPriority);
         }
 
+        public async Task<bool> RemoveAsync(string key)
+        {
+            return await database.KeyDeleteAsync(key, CommandFlags.HighPriority);
+        }
         /// <summary>
         /// 判断key是否存在
         /// </summary>
@@ -116,6 +143,10 @@ namespace InitQ.Cache
             return database.KeyExists(key);
         }
 
+        public async Task<bool> ExistsAsync(string key)
+        {
+            return await database.KeyExistsAsync(key);
+        }
         /// <summary>
         /// 模糊查询key的集合
         /// </summary>
