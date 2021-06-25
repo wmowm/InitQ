@@ -11,6 +11,7 @@ Redis消息队列中间件
 1.通过注解的方式,订阅队列
 2.可以设置消费消息的频次
 3.支持消息广播
+4.1.0.0.7版本新增延迟队列支持
 ~~~
 
 ### 应用场景
@@ -193,6 +194,42 @@ Redis消息队列中间件
         }
     }
   ```
+### 使用zset实现延迟队列(>=1.0.0.7)
++ 1.定义发布者
+  ```
+    Task.Run(async () =>
+    {
+
+        using (var scope = _provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+        {
+            //redis对象
+            var _redis = scope.ServiceProvider.GetService<ICacheService>();
+
+            for (int i = 0; i < 100; i++)
+            {
+                var dt = DateTime.Now.AddSeconds(3 * (i + 1));
+                //key:redis里的key,唯一
+                //msg:任务
+                //time:延时执行的时间
+                await _redis.SortedSetAddAsync("test_0625", $"延迟任务,第{i + 1}个元素,执行时间:{dt.ToString("yyyy-MM-dd HH:mm:ss")}", dt);
+            }
+        }
+    });
+  ```
++ 2.定义消费者
+  ```
+    //延迟队列
+    [SubscribeDelay("test_0625")]
+    private async Task SubRedisTest1(string msg)
+    {
+        Console.WriteLine($"A类--->当前时间:{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} 订阅者延迟队列消息开始--->{msg}");
+        //模拟任务执行耗时
+        var m = new Random().Next(1,10);
+        await Task.Delay(TimeSpan.FromSeconds(m));
+        Console.WriteLine($"A类--->{msg} 结束<---");
+    }
+  ```
+  
 ### 版本
 + V1.0       更新时间:2019-12-30
 
