@@ -273,5 +273,67 @@ namespace InitQ.Cache
         {
             await sub.SubscribeAsync(key, action);
         }
+
+
+        public async Task<bool> SortedSetAddAsync(string key, string msg,double score)
+        {
+            var bl = await database.SortedSetAddAsync(key, msg, score);
+            return bl;
+        }
+
+
+        public async Task<string[]> SortedSetRangeByScoreAsync(string key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending)
+        {
+            var arry = await database.SortedSetRangeByScoreAsync(key, start, stop, exclude, order);
+            return arry.ToStringArray();
+        }
+
+
+        public async  Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, double start, double stop)
+        {
+            var bl = await database.SortedSetRemoveRangeByScoreAsync(key, start,stop);
+            return bl;
+        }
+
+        public async Task<bool> SortedSetAddAsync(string key, string msg, DateTime time)
+        {
+            var score = (time.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            var bl = await database.SortedSetAddAsync(key, msg, score);
+            return bl;
+        }
+
+
+        public async Task<string[]> SortedSetRangeByScoreAsync(string key, DateTime? startTime, DateTime? stopTime, Exclude exclude = Exclude.None, Order order = Order.Ascending)
+        {
+            var start = double.NegativeInfinity;
+            var stop = double.PositiveInfinity;
+            if (startTime.HasValue)
+            {
+                 start = (startTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            }
+            if (stopTime.HasValue)
+            {
+                stop = (stopTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            }
+            var arry = await database.SortedSetRangeByScoreAsync(key, start, stop, exclude, order);
+            return arry.ToStringArray();
+        }
+
+
+        public async Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, DateTime? startTime, DateTime? stopTime)
+        {
+            var start = double.NegativeInfinity;
+            var stop = double.PositiveInfinity;
+            if (startTime.HasValue)
+            {
+                start = (startTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            }
+            if (stopTime.HasValue)
+            {
+                stop = (stopTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            }
+            var bl = await database.SortedSetRemoveRangeByScoreAsync(key, start, stop);
+            return bl;
+        }
     }
 }

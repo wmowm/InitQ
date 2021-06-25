@@ -180,5 +180,66 @@ namespace InitQ.Cache
         /// <param name="action"></param>
         /// <returns></returns>
         Task SubscribeAsync(string key, Action<RedisChannel, RedisValue> action);
+
+        /// <summary>
+        /// 插入zset
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="msg">消息</param>
+        /// <param name="score">序号</param>
+        /// <returns></returns>
+        Task<bool> SortedSetAddAsync(string key, string msg, double score);
+
+
+        /// <summary>
+        /// 插入zset
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="msg">消息</param>
+        /// <param name="time">延迟执行时间</param>
+        /// <returns></returns>
+        Task<bool> SortedSetAddAsync(string key, string msg, DateTime time);
+
+        /// <summary>
+        /// 查询zset
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="start">序号开始</param>
+        /// <param name="stop">序号结束</param>
+        /// <param name="exclude"></param>
+        /// <param name="order">排序</param>
+        /// <returns></returns>
+        Task<string[]> SortedSetRangeByScoreAsync(string key, double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending);
+
+
+        /// <summary>
+        /// 查询zset
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="startTime">延迟执行时间开始</param>
+        /// <param name="stopTime">延迟执行时间结束</param>
+        /// <param name="exclude"></param>
+        /// <param name="order">排序</param>
+        /// <returns></returns>
+        Task<string[]> SortedSetRangeByScoreAsync(string key, DateTime? startTime, DateTime? stopTime, Exclude exclude = Exclude.None, Order order = Order.Ascending);
+
+
+        /// <summary>
+        /// 删除zset元素
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="start">序号开始</param>
+        /// <param name="stop">序号结束</param>
+        /// <returns></returns>
+        Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, double start, double stop);
+
+        /// <summary>
+        /// 删除zset元素
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="start">延迟执行时间开始</param>
+        /// <param name="stop">延迟执行时间结束</param>
+        /// <returns></returns>
+        Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, DateTime? startTime, DateTime? stopTime);
     }
 }
