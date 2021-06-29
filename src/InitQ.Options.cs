@@ -1,7 +1,5 @@
-﻿using InitQ.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace InitQ
 {
@@ -25,6 +23,7 @@ namespace InitQ
         /// <summary>
         /// 是否显示日志
         /// </summary>
+        [Obsolete("现在使用ILogger控制日志输出，不再需要此选项")]
         public bool ShowLog { get; set; }
 
         /// <summary>
@@ -37,7 +36,6 @@ namespace InitQ
             ConnectionString = "";
             IntervalTime = 0;
             SuspendTime = 1000;
-            ShowLog = false;
         }
     }
 }

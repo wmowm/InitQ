@@ -30,7 +30,7 @@ namespace InitQ
 
             services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
 
-            services.AddHostedService<HostedService>();
+            services.AddHostedService<InitQBackgroundService>();
 
 
             if (options.ListSubscribe != null)
