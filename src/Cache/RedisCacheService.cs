@@ -90,6 +90,7 @@ namespace InitQ.Cache
         public T Get<T>(string key)
         {
             var cacheValue = database.StringGet(key);
+            if (string.IsNullOrEmpty(cacheValue)) return default(T);
             var res = JsonConvert.DeserializeObject<T>(cacheValue);
             return res;
         }
@@ -97,6 +98,7 @@ namespace InitQ.Cache
         public async Task<T> GetAsync<T>(string key)
         {
             var cacheValue = await database.StringGetAsync(key);
+            if (string.IsNullOrEmpty(cacheValue)) return default(T);
             var res = JsonConvert.DeserializeObject<T>(cacheValue);
             return res;
         }
