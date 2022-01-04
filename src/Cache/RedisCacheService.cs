@@ -37,6 +37,7 @@ namespace InitQ.Cache
 
         /// <summary>
         /// desc    redis连接对象初始化缓存服务
+        /// ps      通过传递过来的对象，直接支持哨兵模式
         /// author  hyz
         /// 
         /// </summary>
