@@ -2,6 +2,7 @@
 using InitQ.Cache;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,7 +29,20 @@ namespace InitQ
 
             services.Configure(setupAction);
 
-            services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
+
+            var provider = services.BuildServiceProvider();
+            var redisConn = provider.GetService<ConnectionMultiplexer>();
+            if (redisConn != null)
+            {
+                services.AddSingleton(typeof(ICacheService), new RedisCacheService(redisConn));
+            }
+            else
+            {
+                services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
+            }
+
+
+            //services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
 
             services.AddHostedService<HostedService>();
 
