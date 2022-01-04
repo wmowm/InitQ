@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Description>Redis消息队列中间件
-1.支持redis广播</Description>
-    <AssemblyVersion>1.0.0.4</AssemblyVersion>
-    <FileVersion>1.0.0.4</FileVersion>
-    <Version>1.0.0.8</Version>
+    <Description>
+		Redis消息队列中间件
+        1.支持redis广播
+		2.支持redis延迟队列
+    </Description>
+    <AssemblyVersion>1.0.0.9</AssemblyVersion>
+    <FileVersion>1.0.0.9</FileVersion>
+    <Version>1.0.0.9</Version>
   </PropertyGroup>
 
   <ItemGroup>
