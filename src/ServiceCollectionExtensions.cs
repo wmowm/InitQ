@@ -32,6 +32,7 @@ namespace InitQ
 
             var provider = services.BuildServiceProvider();
             var redisConn = provider.GetService<ConnectionMultiplexer>();
+
             if (redisConn != null)
             {
                 services.AddSingleton(typeof(ICacheService), new RedisCacheService(redisConn));

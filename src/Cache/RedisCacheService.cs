@@ -38,6 +38,7 @@ namespace InitQ.Cache
         /// <summary>
         /// desc    redis连接对象初始化缓存服务
         /// author  hyz
+        /// 
         /// </summary>
         /// <param name="connection"></param>
         public RedisCacheService(ConnectionMultiplexer connection)
