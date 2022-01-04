@@ -35,6 +35,23 @@ namespace InitQ.Cache
             sub = connectionMultiplexer.GetSubscriber();
         }
 
+        /// <summary>
+        /// desc    redis连接对象初始化缓存服务
+        /// ps      通过传递过来的对象，直接支持哨兵模式
+        /// author  hyz
+        /// 
+        /// </summary>
+        /// <param name="connection"></param>
+        public RedisCacheService(ConnectionMultiplexer connection)
+        {
+            //设置线程池最小连接数
+            ThreadPool.SetMinThreads(200, 200);
+
+            connectionMultiplexer = connection;// ConnectionMultiplexer.Connect(options);
+            database = connectionMultiplexer.GetDatabase();
+            //通道广播
+            sub = connectionMultiplexer.GetSubscriber();
+        }
 
         public RedisCacheService(string configuration)
         {
