@@ -29,7 +29,7 @@ namespace InitQ
 
             services.Configure(setupAction);
 
-
+            // 依赖注入中提取ConnectionMultiplexerd对象，避免再次初始化
             var provider = services.BuildServiceProvider();
             var redisConn = provider.GetService<ConnectionMultiplexer>();
 
@@ -42,8 +42,6 @@ namespace InitQ
                 services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
             }
 
-
-            //services.AddSingleton(typeof(ICacheService), new RedisCacheService(options.ConnectionString));
 
             services.AddHostedService<HostedService>();
 
