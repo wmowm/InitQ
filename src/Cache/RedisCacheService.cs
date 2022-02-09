@@ -354,5 +354,15 @@ namespace InitQ.Cache
             var bl = await database.SortedSetRemoveRangeByScoreAsync(key, start, stop);
             return bl;
         }
+
+        public bool Set(string key, object data, TimeSpan cacheTime)
+        {
+            return database.StringSet(key, JsonConvert.SerializeObject(data), cacheTime);
+        }
+
+        public async Task<bool> SetAsync(string key, object data, TimeSpan cacheTime)
+        {
+            return await database.StringSetAsync(key, JsonConvert.SerializeObject(data), cacheTime);
+        }
     }
 }
