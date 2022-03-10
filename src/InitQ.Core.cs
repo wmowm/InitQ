@@ -139,8 +139,13 @@ namespace InitQ
                                     finally
                                     {
                                         //释放锁
-                                        _redis.GetDatabase().LockRelease(keyInfo, token);
+                                        await _redis.GetDatabase().LockReleaseAsync(keyInfo, token);
                                     }
+                                }
+                                else 
+                                {
+                                    //线程挂起1s,避免循环竞争锁,造成开销
+                                    await Task.Delay(1000);
                                 }
                             }
                         }));
