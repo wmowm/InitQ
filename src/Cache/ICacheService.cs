@@ -257,5 +257,44 @@ namespace InitQ.Cache
         /// <param name="stop">延迟执行时间结束</param>
         /// <returns></returns>
         Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, DateTime? startTime, DateTime? stopTime);
+
+        /// <summary>
+        /// 计数器(递增)
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="value">步长</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        long Increment(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None);
+
+        /// <summary>
+        /// 计数器(递增)
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="value">步长</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        Task<long> IncrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None);
+        /// <summary>
+        /// 计数器(递减)
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="value">步长</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        long Decrement(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None);
+
+        /// <summary>
+        /// 计数器(递减)
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="value">步长</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        Task<long> DecrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None);
     }
 }

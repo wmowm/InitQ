@@ -364,5 +364,48 @@ namespace InitQ.Cache
         {
             return await database.StringSetAsync(key, JsonConvert.SerializeObject(data), cacheTime);
         }
+
+
+        public long Increment(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
+        {
+            var bl = Exists(key);
+            if (!bl)
+            {
+                 Set(key, 0, cacheTime);
+            }
+            return database.StringIncrement(key, value, flags);
+        }
+
+        public async Task<long> IncrementAsync(string key, TimeSpan cacheTime,long value=1, CommandFlags flags=CommandFlags.None)
+        {
+            var bl = await ExistsAsync(key);
+            if (!bl)
+            {
+                await SetAsync(key, 0, cacheTime);
+            }
+            return await database.StringIncrementAsync(key,value,flags);
+        }
+
+
+
+        public long Decrement(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
+        {
+            var bl = Exists(key);
+            if (!bl)
+            {
+                Set(key, 0, cacheTime);
+            }
+            return database.StringDecrement(key, value, flags);
+        }
+
+        public async Task<long> DecrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
+        {
+            var bl = await ExistsAsync(key);
+            if (!bl)
+            {
+                await SetAsync(key, 0, cacheTime);
+            }
+            return await database.StringDecrementAsync(key, value, flags);
+        }
     }
 }
