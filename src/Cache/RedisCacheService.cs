@@ -368,44 +368,32 @@ namespace InitQ.Cache
 
         public long Increment(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
         {
-            var bl = Exists(key);
-            if (!bl)
-            {
-                 Set(key, 0, cacheTime);
-            }
-            return database.StringIncrement(key, value, flags);
+            var res = database.StringIncrement(key,value,flags);
+            database.KeyExpire(key,cacheTime);
+            return res;
         }
 
         public async Task<long> IncrementAsync(string key, TimeSpan cacheTime,long value=1, CommandFlags flags=CommandFlags.None)
         {
-            var bl = await ExistsAsync(key);
-            if (!bl)
-            {
-                await SetAsync(key, 0, cacheTime);
-            }
-            return await database.StringIncrementAsync(key,value,flags);
+            var res = await database.StringIncrementAsync(key, value, flags);
+            await database.KeyExpireAsync(key, cacheTime);
+            return res;
         }
 
 
 
         public long Decrement(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
         {
-            var bl = Exists(key);
-            if (!bl)
-            {
-                Set(key, 0, cacheTime);
-            }
-            return database.StringDecrement(key, value, flags);
+            var res = database.StringDecrement(key, value, flags);
+            database.KeyExpire(key, cacheTime);
+            return res;
         }
 
         public async Task<long> DecrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
         {
-            var bl = await ExistsAsync(key);
-            if (!bl)
-            {
-                await SetAsync(key, 0, cacheTime);
-            }
-            return await database.StringDecrementAsync(key, value, flags);
+            var res = await database.StringDecrementAsync(key, value, flags);
+            await database.KeyExpireAsync(key, cacheTime);
+            return res;
         }
     }
 }
