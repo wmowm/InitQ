@@ -142,11 +142,11 @@ namespace InitQ
                                         await _redis.GetDatabase().LockReleaseAsync(keyInfo, token);
                                     }
                                 }
-                                //else 
-                                //{
-                                //    //线程挂起1s,避免循环竞争锁,造成开销
-                                //    await Task.Delay(1000);
-                                //}
+                                else
+                                {
+                                    //线程挂起1s,避免循环竞争锁,造成开销
+                                    await Task.Delay(1000);
+                                }
                             }
                         }));
                         //消费队列
