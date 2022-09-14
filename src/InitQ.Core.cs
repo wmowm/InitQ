@@ -108,7 +108,7 @@ namespace InitQ
                         {
                             while (true)
                             {
-                                var keyInfo = "lockZSetTibos"; //锁名称
+                                var keyInfo = "initq-lock:" + ConsumerExecutorDescriptor.Attribute.Name; //锁名称 每个延迟队列一个锁
                                 var token = Guid.NewGuid().ToString("N"); //锁持有者
                                 var coon = await _redis.GetDatabase().LockTakeAsync(keyInfo, token, TimeSpan.FromSeconds(5), CommandFlags.None);
                                 if (coon)
@@ -142,11 +142,11 @@ namespace InitQ
                                         await _redis.GetDatabase().LockReleaseAsync(keyInfo, token);
                                     }
                                 }
-                                else 
-                                {
-                                    //线程挂起1s,避免循环竞争锁,造成开销
-                                    await Task.Delay(1000);
-                                }
+                                //else 
+                                //{
+                                //    //线程挂起1s,避免循环竞争锁,造成开销
+                                //    await Task.Delay(1000);
+                                //}
                             }
                         }));
                         //消费队列
