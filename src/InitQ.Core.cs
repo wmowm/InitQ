@@ -144,8 +144,8 @@ namespace InitQ
                                 }
                                 else
                                 {
-                                    //线程挂起1s,避免循环竞争锁,造成开销
-                                    await Task.Delay(1000);
+                                    //线程挂起10毫秒,避免循环竞争锁,造成开销
+                                    await Task.Delay(10);
                                 }
                             }
                         }));
