@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using InitQ.Model;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -187,9 +188,22 @@ namespace InitQ.Cache
             var res = database.ListLeftPush(key, value);
             return res;
         }
+
+        public long ListLeftPush<T>(string key, T value) where T : class
+        {
+            var res = database.ListLeftPush(key, JsonConvert.SerializeObject(value));
+            return res;
+        }
+
         public async Task<long> ListLeftPushAsync(string key, string value)
         {
             var res = await database.ListLeftPushAsync(key, value);
+            return res;
+        }
+
+        public async Task<long> ListLeftPushAsync<T>(string key, T value) where T : class
+        {
+            var res = await database.ListLeftPushAsync(key, JsonConvert.SerializeObject(value));
             return res;
         }
 
@@ -198,9 +212,22 @@ namespace InitQ.Cache
             var res = database.ListRightPush(key, value);
             return res;
         }
+
+        public long ListRightPush<T>(string key, T value) where T : class
+        {
+            var res = database.ListRightPush(key, JsonConvert.SerializeObject(value));
+            return res;
+        }
+
         public async Task<long> ListRightPushAsync(string key, string value)
         {
             var res = await database.ListRightPushAsync(key, value);
+            return res;
+        }
+
+        public async Task<long> ListRightPushAsync<T>(string key, T value) where T : class
+        {
+            var res = await database.ListRightPushAsync(key, JsonConvert.SerializeObject(value));
             return res;
         }
 
@@ -276,14 +303,14 @@ namespace InitQ.Cache
             var count = database.Publish(key, msg);
             return count;
         }
-        public async Task<long> PublishAsync(string key,string msg)
+        public async Task<long> PublishAsync(string key, string msg)
         {
-            var count = await database.PublishAsync(key,msg);
+            var count = await database.PublishAsync(key, msg);
             return count;
         }
 
 
-        public void Subscribe(string key,Action<RedisChannel, RedisValue> action)
+        public void Subscribe(string key, Action<RedisChannel, RedisValue> action)
         {
             sub.Subscribe(key, action);
         }
@@ -294,7 +321,7 @@ namespace InitQ.Cache
         }
 
 
-        public async Task<bool> SortedSetAddAsync(string key, string msg,double score)
+        public async Task<bool> SortedSetAddAsync(string key, string msg, double score)
         {
             var bl = await database.SortedSetAddAsync(key, msg, score);
             return bl;
@@ -308,9 +335,9 @@ namespace InitQ.Cache
         }
 
 
-        public async  Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, double start, double stop)
+        public async Task<long> SortedSetRemoveRangeByScoreAsync(RedisKey key, double start, double stop)
         {
-            var bl = await database.SortedSetRemoveRangeByScoreAsync(key, start,stop);
+            var bl = await database.SortedSetRemoveRangeByScoreAsync(key, start, stop);
             return bl;
         }
 
@@ -328,7 +355,7 @@ namespace InitQ.Cache
             var stop = double.PositiveInfinity;
             if (startTime.HasValue)
             {
-                 start = (startTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+                start = (startTime.Value.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
             }
             if (stopTime.HasValue)
             {
@@ -368,12 +395,12 @@ namespace InitQ.Cache
 
         public long Increment(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
         {
-            var res = database.StringIncrement(key,value,flags);
-            database.KeyExpire(key,cacheTime);
+            var res = database.StringIncrement(key, value, flags);
+            database.KeyExpire(key, cacheTime);
             return res;
         }
 
-        public async Task<long> IncrementAsync(string key, TimeSpan cacheTime,long value=1, CommandFlags flags=CommandFlags.None)
+        public async Task<long> IncrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None)
         {
             var res = await database.StringIncrementAsync(key, value, flags);
             await database.KeyExpireAsync(key, cacheTime);
@@ -393,6 +420,18 @@ namespace InitQ.Cache
         {
             var res = await database.StringDecrementAsync(key, value, flags);
             await database.KeyExpireAsync(key, cacheTime);
+            return res;
+        }
+
+        public bool KeyExpire(string key, TimeSpan cacheTime, CommandFlags flags = CommandFlags.None)
+        {
+            var res = database.KeyExpire(key, cacheTime, flags);
+            return res;
+        }
+
+        public async Task<bool> KeyExpireAsync(string key, TimeSpan cacheTime, CommandFlags flags = CommandFlags.None)
+        {
+            var res = await database.KeyExpireAsync(key, cacheTime, flags);
             return res;
         }
     }

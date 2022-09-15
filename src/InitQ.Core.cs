@@ -1,7 +1,11 @@
 ﻿using InitQ.Abstractions;
+using InitQ.Attributes;
 using InitQ.Cache;
 using InitQ.Internal;
+using InitQ.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
@@ -28,6 +32,7 @@ namespace InitQ
                     {
                         var publish = ConsumerExecutorDescriptor.Attribute.Name;
                         var provider = scope.ServiceProvider;
+                        var logger = scope.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger<InitQCore>();
                         var obj = ActivatorUtilities.GetServiceOrCreateInstance(provider, ConsumerExecutorDescriptor.ImplTypeInfo);
                         ParameterInfo[] parameterInfos = ConsumerExecutorDescriptor.MethodInfo.GetParameters();
                         //redis对象
@@ -36,9 +41,9 @@ namespace InitQ
                         {
                             try
                             {
-                                if (options.ShowLog)
+                                if (options.ShowLog && logger != null)
                                 {
-                                    Console.WriteLine($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
+                                    logger.LogInformation($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
                                 }
                                 var count = await _redis.ListLengthAsync(publish);
                                 if (count > 0)
@@ -65,7 +70,7 @@ namespace InitQ
                                     }
                                     catch (Exception ex)
                                     {
-                                        Console.WriteLine(ex.Message);
+                                        logger.LogInformation(ex.Message);
                                     }
                                 }
                                 else
@@ -76,7 +81,7 @@ namespace InitQ
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine(ex.Message);
+                                logger.LogInformation(ex.Message);
                             }
                         }
                     }
@@ -98,6 +103,7 @@ namespace InitQ
                     {
                         var publish = $"queue:{ConsumerExecutorDescriptor.Attribute.Name}";
                         var provider = scope.ServiceProvider;
+                        var logger = scope.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger<InitQCore>();
                         var obj = ActivatorUtilities.GetServiceOrCreateInstance(provider, ConsumerExecutorDescriptor.ImplTypeInfo);
                         ParameterInfo[] parameterInfos = ConsumerExecutorDescriptor.MethodInfo.GetParameters();
                         //redis对象
@@ -134,7 +140,7 @@ namespace InitQ
                                     }
                                     catch (Exception ex)
                                     {
-                                        Console.WriteLine($"执行延迟队列报错:{ex.Message}");
+                                        logger.LogInformation($"执行延迟队列报错:{ex.Message}");
                                     }
                                     finally
                                     {
@@ -156,9 +162,9 @@ namespace InitQ
                             {
                                 try
                                 {
-                                    if (options.ShowLog)
+                                    if (options.ShowLog && logger != null)
                                     {
-                                        Console.WriteLine($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
+                                        logger.LogInformation($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
                                     }
                                     var count = await _redis.ListLengthAsync(publish);
                                     if (count > 0)
@@ -185,7 +191,7 @@ namespace InitQ
                                         }
                                         catch (Exception ex)
                                         {
-                                            Console.WriteLine(ex.Message);
+                                            logger.LogInformation(ex.Message);
                                         }
                                     }
                                     else
@@ -196,7 +202,7 @@ namespace InitQ
                                 }
                                 catch (Exception ex)
                                 {
-                                    Console.WriteLine(ex.Message);
+                                    logger.LogInformation(ex.Message);
                                 }
                             }
                         }));
@@ -204,6 +210,169 @@ namespace InitQ
                 }));
             }
             await Task.WhenAll(tasks);
+        }
+
+
+
+
+        private async Task SendInterval(IEnumerable<ConsumerExecutorDescriptor> ExecutorDescriptorList, IServiceProvider serviceProvider, InitQOptions options)
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (var ConsumerExecutorDescriptor in ExecutorDescriptorList)
+            {
+                //线程
+                tasks.Add(Task.Run(async () =>
+                {
+                    using (var scope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                    {
+                        var attribute = (SubscribeIntervalAttribute)ConsumerExecutorDescriptor.Attribute;
+
+                        var logger = scope.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger<InitQCore>();
+                        var publish = ConsumerExecutorDescriptor.Attribute.Name;
+                        var provider = scope.ServiceProvider;
+                        var obj = ActivatorUtilities.GetServiceOrCreateInstance(provider, ConsumerExecutorDescriptor.ImplTypeInfo);
+                        ParameterInfo[] parameterInfos = ConsumerExecutorDescriptor.MethodInfo.GetParameters();
+                        //redis对象
+                        var _redis = scope.ServiceProvider.GetService<ICacheService>();
+                        while (true)
+                        {
+                            try
+                            {
+                                if (options.ShowLog && logger != null)
+                                {
+                                    logger.LogInformation($"执行方法:{obj.ToString()},key:{publish},执行时间{DateTime.Now}");
+                                }
+                                var count = await _redis.ListLengthAsync(publish);
+                                if (count > 0)
+                                {
+                                    //从MQ里获取一条消息
+                                    var res = await _redis.ListRightPopAsync(publish);
+                                    if (string.IsNullOrEmpty(res)) continue;
+
+                                    //堵塞
+                                    await Task.Delay(options.IntervalTime);
+
+                                    res = await IntervalPan(res, attribute, logger, _redis, options);
+                                    if (string.IsNullOrEmpty(res)) continue;
+                                    try
+                                    {
+                                        await Task.Run(async () =>
+                                        {
+                                            if (parameterInfos.Length == 0)
+                                            {
+                                                ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, null);
+                                            }
+                                            else
+                                            {
+                                                object[] parameters = new object[] { res };
+                                                ConsumerExecutorDescriptor.MethodInfo.Invoke(obj, parameters);
+                                            }
+                                        });
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        logger.LogInformation(ex.Message);
+                                    }
+                                }
+                                else
+                                {
+                                    //线程挂起1s
+                                    await Task.Delay(options.SuspendTime);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogInformation(ex.Message);
+                            }
+                        }
+                    }
+                }));
+            }
+            await Task.WhenAll(tasks);
+        }
+
+
+        /// <summary>
+        /// 循环执行计划
+        /// </summary>
+        /// <param name="res"></param>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        private async Task<string> IntervalPan(string res, SubscribeIntervalAttribute attribute,ILogger<InitQCore> logger,ICacheService redis, InitQOptions options) 
+        {
+            try
+            {
+                var model = JsonConvert.DeserializeObject<IntervalMessage>(res);
+                if (model == null) 
+                {
+                    if (logger != null && options.ShowLog) logger.LogWarning($"循环执行计划模型反序列化失败");
+                    return res;
+                }
+                if (attribute == null) 
+                {
+                    if (logger != null && options.ShowLog) logger.LogWarning($"间隔消费消息配置异常");
+                    return res;
+                }
+                if(string.IsNullOrEmpty(attribute.IntervalList)) 
+                {
+                    if (logger != null && options.ShowLog) logger.LogWarning($"间隔数配置异常");
+                    return res;
+                }
+                List<int> intervalList = new List<int>();
+                try
+                {
+                    intervalList = attribute.IntervalList.Split(',').Select(x => Convert.ToInt32(x)).ToList();
+                }
+                catch
+                {
+                    if (logger != null && options.ShowLog) logger.LogWarning($"间隔数配置类型异常");
+                    return res;
+                }
+                //首次执行
+                if(model.Num <= 0) 
+                {
+                    model.Num++;
+                    return JsonConvert.SerializeObject(model);
+                }
+
+                var list = attribute.IntervalList.Split(',').Select(x => Convert.ToInt32(x)).ToList();
+                //最大执行次数
+                attribute.MaxNum = attribute.MaxNum < 0 ? 0 : attribute.MaxNum;
+                if (attribute.MaxNum != 0) 
+                {
+                    if(model.Num >= attribute.MaxNum) 
+                    {
+                        if (!string.IsNullOrEmpty(attribute.DeadLetterKey))
+                        {
+                            //丢人死信队列
+                            await redis.ListLeftPushAsync(attribute.DeadLetterKey, res);
+                        }
+                        return "";
+                    }
+                    
+                }
+
+
+                var intervalNum = 0;
+                if (attribute.IntervalType == 0)
+                {
+                    intervalNum = model.Num > intervalList.Count ? intervalList[intervalList.Count - 1] : intervalList[model.Num - 1];
+                }
+                else
+                {
+                    intervalNum = intervalList[model.Num % intervalList.Count];
+                }
+                model.Num++;
+                await Task.Delay(TimeSpan.FromSeconds(intervalNum));
+                return JsonConvert.SerializeObject(model);
+
+
+            }
+            catch (Exception ex)
+            {
+                if (logger != null && options.ShowLog) logger.LogWarning($"间隔消费消息计划异常,{ex.Message}|{ex.StackTrace}");
+                return res;
+            }
         }
 
         public async Task FindInterfaceTypes(IServiceProvider provider, InitQOptions options)
@@ -225,10 +394,13 @@ namespace InitQ
                 }
                 List<Task> tasks = new List<Task>();
                 //普通队列任务
-                tasks.Add(Send(executorDescriptorList.Where(m => m.Attribute.GetType().Name == "SubscribeAttribute"), provider, options));
+                tasks.Add(Send(executorDescriptorList.Where(m => m.Attribute.GetType().Name == typeof(SubscribeAttribute).Name), provider, options));
 
                 //延迟队列任务
-                tasks.Add(SendDelay(executorDescriptorList.Where(m => m.Attribute.GetType().Name == "SubscribeDelayAttribute"), provider, options));
+                tasks.Add(SendDelay(executorDescriptorList.Where(m => m.Attribute.GetType().Name == typeof(SubscribeDelayAttribute).Name), provider, options));
+
+                //间隔队列任务
+                tasks.Add(SendInterval(executorDescriptorList.Where(m => m.Attribute.GetType().Name == typeof(SubscribeIntervalAttribute).Name), provider, options));
                 await Task.WhenAll(tasks);
             }
         }

@@ -132,6 +132,8 @@ namespace InitQ.Cache
 
         Task<long> ListRightPushAsync(string key, string value);
 
+        Task<long> ListLeftPushAsync<T>(string key, T value) where T : class;
+
         long ListRightPush(string key, string value);
 
         /// <summary>
@@ -141,6 +143,12 @@ namespace InitQ.Cache
         /// <param name="key"></param>
         /// <returns></returns>
         Task<T> ListLeftPopAsync<T>(string key) where T : class;
+
+
+        long ListLeftPush<T>(string key, T value) where T : class;
+        long ListRightPush<T>(string key, T value) where T : class;
+
+        Task<long> ListRightPushAsync<T>(string key, T value) where T : class;
 
         T ListLeftPop<T>(string key) where T : class;
 
@@ -296,5 +304,23 @@ namespace InitQ.Cache
         /// <param name="flags"></param>
         /// <returns></returns>
         Task<long> DecrementAsync(string key, TimeSpan cacheTime, long value = 1, CommandFlags flags = CommandFlags.None);
+
+        /// <summary>
+        /// 设置key有效期
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        bool KeyExpire(string key, TimeSpan cacheTime, CommandFlags flags = CommandFlags.None);
+
+        /// <summary>
+        /// 设置key有效期
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="cacheTime">过期时间</param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        Task<bool> KeyExpireAsync(string key, TimeSpan cacheTime, CommandFlags flags = CommandFlags.None);
     }
 }

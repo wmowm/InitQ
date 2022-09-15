@@ -22,9 +22,7 @@ namespace InitQ.Abstractions
         public string Name { get; }
 
         /// <summary>
-        /// Default group name is CapOptions setting.(Assembly name)
-        /// kafka --> groups.id
-        /// rabbit MQ --> queue.name
+        /// group
         /// </summary>
         public string Group { get; set; }
     }
