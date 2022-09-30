@@ -10,11 +10,6 @@ namespace InitQ.Model
     public class IntervalMessage
     {
         /// <summary>
-        /// 唯一标识
-        /// </summary>
-        public string Id { get; set; } = Guid.NewGuid().ToString("N");
-
-        /// <summary>
         /// 消息
         /// </summary>
         public string Msg { get; set; }

@@ -20,7 +20,7 @@ namespace InitQTest.Example
         }
 
 
-        [SubscribeInterval("tibos_interval_test_1",0,"2,5,10,15",1,"dead_tibos_test_1")]
+        [SubscribeInterval("tibos_interval_test_1",0,"2,3,5,10",1,"dead_tibos_test_1")]
         private async Task SubscribeIntervalTest(string msg)
         {
             Console.WriteLine($"A类间隔执行--->当前时间:{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} 订阅者A消费消息:{msg}");

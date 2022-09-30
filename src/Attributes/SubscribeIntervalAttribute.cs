@@ -16,13 +16,13 @@ namespace InitQ.Attributes
 
         /// <summary>
         /// 间隔类型
-        /// 0.根据执行次数取值
-        /// 1.根据执行次数取模
+        /// 0.根据执行次数取值(间隔时间递增)  --> 2,3,5,10,10,10,10
+        /// 1.根据执行次数取模(间隔时间周期)  --> 2,3,5,10,2,3,5,10
         /// </summary>
         public int IntervalType { get; set; }
 
         /// <summary>
-        /// 间隔数,单位秒,分隔(2,5,10,30,60)
+        /// 间隔数,单位秒,分隔(2,3,5,10)
         /// </summary>
         public string IntervalList { get; set; }
 
@@ -39,7 +39,7 @@ namespace InitQ.Attributes
         /// <param name="maxNum">最大执行次数,超过后丢入死信队列,无死信队列则丢弃</param>
         /// <param name="intervalType">间隔类型</param>
         /// <param name="deadLetterKey">死信队列key</param>
-        public SubscribeIntervalAttribute(string name, int maxNum=0, string intervalList="",int intervalType=0,string deadLetterKey="") : base(name)
+        public SubscribeIntervalAttribute(string name, int maxNum=0, string intervalList="",int intervalType=1,string deadLetterKey="") : base(name)
         {
             MaxNum = maxNum;
             IntervalType = intervalType;

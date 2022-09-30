@@ -360,7 +360,7 @@ namespace InitQ
                 }
                 else
                 {
-                    intervalNum = intervalList[model.Num % intervalList.Count];
+                    intervalNum = intervalList[(model.Num-1) % intervalList.Count];
                 }
                 model.Num++;
                 await Task.Delay(TimeSpan.FromSeconds(intervalNum));
