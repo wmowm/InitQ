@@ -7,7 +7,7 @@ namespace InitQ.Model
     public class IntervalPanResponse
     {
         /// <summary>
-        /// 状态码(0:正常推送,-1:加入死信队列)
+        /// 状态码(0:正常推送,-1:加入死信队列,-2:丢弃,1:加入延迟队列)
         /// </summary>
         public int Code { get; set; }
 
