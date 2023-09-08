@@ -5,9 +5,9 @@
     <Description>
 		Redis消息队列中间件 1.支持redis广播 2.支持redis延迟队列 3.支持循环执行队列
     </Description>
-    <AssemblyVersion>1.0.0.16</AssemblyVersion>
-    <FileVersion>1.0.0.16</FileVersion>
-    <Version>1.0.0.16</Version>
+    <AssemblyVersion>1.0.0.17</AssemblyVersion>
+    <FileVersion>1.0.0.17</FileVersion>
+    <Version>1.0.0.17</Version>
   </PropertyGroup>
 
   <ItemGroup>
