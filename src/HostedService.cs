@@ -38,11 +38,8 @@ namespace InitQ
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var init = new InitQCore(cancellationToken);
-                await init.FindInterfaceTypes(_provider, _options.Value);
-            }
+            var init = new InitQCore(cancellationToken);
+            await init.FindInterfaceTypes(_provider, _options.Value);
         }
 
         public void Dispose()
