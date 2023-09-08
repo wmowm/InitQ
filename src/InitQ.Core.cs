@@ -19,6 +19,12 @@ namespace InitQ
 {
     public class InitQCore
     {
+        private readonly CancellationToken _cancellationToken;
+        public InitQCore(CancellationToken cancellationToken) 
+        {
+            _cancellationToken = cancellationToken;
+        }
+
 
         private async Task Send(IEnumerable<ConsumerExecutorDescriptor> ExecutorDescriptorList, IServiceProvider serviceProvider, InitQOptions options)
         {
@@ -37,7 +43,7 @@ namespace InitQ
                         ParameterInfo[] parameterInfos = ConsumerExecutorDescriptor.MethodInfo.GetParameters();
                         //redis对象
                         var _redis = scope.ServiceProvider.GetService<ICacheService>();
-                        while (true)
+                        while (!_cancellationToken.IsCancellationRequested)
                         {
                             try
                             {
@@ -86,8 +92,9 @@ namespace InitQ
                                 logger.LogInformation(ex.Message);
                             }
                         }
+                        logger.LogInformation($"消息队列,请求被取消-----------------");
                     }
-                }));
+                },_cancellationToken));
             }
             await Task.WhenAll(tasks);
         }
@@ -114,7 +121,7 @@ namespace InitQ
                         //从zset添加到队列(锁)
                         tasks.Add(Task.Run(async () =>
                         {
-                            while (true)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 try
                                 {
@@ -165,11 +172,12 @@ namespace InitQ
                                     logger.LogInformation(ex.Message);
                                 }
                             }
-                        }));
+                            logger.LogInformation($"延迟队列,zset,请求被取消-----------------");
+                        },_cancellationToken));
                         //消费队列
                         tasks.Add(Task.Run(async () => 
                         {
-                            while (true)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 try
                                 {
@@ -218,7 +226,8 @@ namespace InitQ
                                     logger.LogInformation(ex.Message);
                                 }
                             }
-                        }));
+                            logger.LogInformation($"延迟队列,消费任务,请求被取消-----------------");
+                        },_cancellationToken));
                     }
                 }));
             }
@@ -257,7 +266,7 @@ namespace InitQ
                         //从队列到zset
                         tasks.Add(Task.Run(async () => 
                         {
-                            while (true)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 try
                                 {
@@ -304,12 +313,14 @@ namespace InitQ
                                     logger.LogInformation(ex.Message);
                                 }
                             }
-                        }));
+                            logger.LogInformation($"循环队列,加入zset任务,请求被取消-----------------");
+                        },_cancellationToken));
                         //从zset添加到队列(锁)
                         tasks.Add(Task.Run(async () =>
                         {
-                            while (true)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
+                                _cancellationToken.ThrowIfCancellationRequested();
                                 try
                                 {
                                     var keyInfo = "initq-interval-lock:" + ConsumerExecutorDescriptor.Attribute.Name; //锁名称 每个延迟队列一个锁
@@ -358,11 +369,12 @@ namespace InitQ
                                     logger.LogInformation(ex.Message);
                                 }
                             }
-                        }));
+                            logger.LogInformation($"循环队列,移除zset任务,请求被取消-----------------");
+                        }, _cancellationToken));
                         //消费队列
                         tasks.Add(Task.Run(async () =>
                         {
-                            while (true)
+                            while (!_cancellationToken.IsCancellationRequested)
                             {
                                 try
                                 {
@@ -411,7 +423,8 @@ namespace InitQ
                                     logger.LogInformation(ex.Message);
                                 }
                             }
-                        }));
+                            logger.LogInformation($"循环队列,消费任务,请求被取消-----------------");
+                        }, _cancellationToken));
                     }
                 }));
             }
